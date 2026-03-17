@@ -1,0 +1,116 @@
+.input-bar {
+    border-top: 1px solid var(--border);
+    padding: 12px 24px 16px;
+    background: var(--paper);
+  }
+  
+  .input-subject-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  
+  .input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 10px 10px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .input-box:focus-within {
+    border-color: var(--amber-bd);
+    box-shadow: 0 0 0 3px rgba(193,127,36,0.08);
+  }
+  
+  .q-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.6;
+    min-height: 24px;
+    max-height: 140px;
+  }
+  
+  .q-textarea::placeholder { color: var(--muted); }
+  .q-textarea:disabled { opacity: 0.5; }
+  
+  .input-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  
+  .action-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--paper);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    color: var(--muted);
+  }
+  
+  .action-btn:hover:not(:disabled) {
+    border-color: var(--amber-bd);
+    background: var(--amber-lt);
+  }
+  
+  .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  
+  .send-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: var(--border);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  
+  .send-btn.active {
+    background: var(--amber);
+    color: white;
+    box-shadow: 0 2px 12px rgba(193,127,36,0.35);
+  }
+  
+  .send-btn.active:hover {
+    background: #a86e1a;
+    transform: translateY(-1px);
+  }
+  
+  .send-btn:disabled { cursor: not-allowed; }
+  
+  .send-spin { font-size: 14px; }
+  
+  .input-hint {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 0 2px;
+  }
+  
+  .char-count {
+    font-family: 'JetBrains Mono', monospace;
+  }

@@ -1,0 +1,34 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f5f0e8;
+  --paper:     #fdfaf4;
+  --surface:   #f0ebe0;
+  --border:    #e0d8c8;
+  --ink:       #1a1508;
+  --ink2:      #4a4030;
+  --muted:     #8a7d68;
+  --amber:     #c17f24;
+  --amber-lt:  #fdf3e0;
+  --amber-bd:  #e8c068;
+  --teal:      #1a6b5a;
+  --teal-lt:   #e8f5f1;
+  --red:       #c0392b;
+  --red-lt:    #fdf0ee;
+  --blue:      #1a4a8a;
+  --blue-lt:   #eef3fb;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+button { cursor: pointer; font-family: inherit; }
+textarea { font-family: inherit; }
