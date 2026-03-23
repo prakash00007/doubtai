@@ -1,4 +1,11 @@
 .env
+.env.*
 .env.save
+.env.local
+backend/__pycache__/
 __pycache__/
 *.pyc
+backend/books/
+.DS_Store
+node_modules/
+dist/
