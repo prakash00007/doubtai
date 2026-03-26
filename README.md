@@ -12,7 +12,7 @@
 ![Pinecone](https://img.shields.io/badge/Pinecone-Vector_DB-6C3483?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-27AE60?style=for-the-badge)
 
-**[🚀 Demo](#) · [📖 Docs](#-api-endpoints) · [🐛 Report Bug](https://github.com/prakash00007/doubtai/issues) · [✨ Request Feature](https://github.com/prakash00007/doubtai/issues)**
+**[🚀 Demo](#) · [📖 Docs](#-api-endpoints) · [🐛 Report Bug](https://github.com/prakash00007/doubtai/issues) · [✨ Request Feature](https://github.com/prakash00007/doubtai/issues)***
 
 </div>
 
