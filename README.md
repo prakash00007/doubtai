@@ -1,7 +1,7 @@
 # 📚 DoubtAI — AI Doubt Solver for JEE & NEET
 
 > **Your personal IIT topper, available 24/7 at ₹0.**  
-> Step-by-step answers in the exact style of NCERT, HC Verma, and Cengage.
+> Step-by-step answers in the exact style of NCERT, HC Verma, and Cengage..
 
 <div align="center">
 
