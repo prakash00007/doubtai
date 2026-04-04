@@ -8,31 +8,33 @@ const EXAMPLES = [
   { q: "Explain DNA replication steps" },
 ]
 
-// ── Parse structured answer into sections ─────────────────────────────────────
+// ── Difficulty detector ───────────────────────────────────────────────────────
+function getDifficulty(text, model) {
+  if (model && model.includes('8b')) return { label: 'Easy', color: 'green' }
+  const hardWords = ['advanced', 'complex', 'derive', 'prove', 'jee advanced',
+                     'integration', 'differential', 'theorem']
+  const isHard = hardWords.some(w => text.toLowerCase().includes(w))
+  if (isHard) return { label: 'Hard', color: 'red' }
+  return { label: 'Medium', color: 'amber' }
+}
+
+// ── Format answer ─────────────────────────────────────────────────────────────
 function parseAnswer(text) {
   const sections = []
   const lines = text.split('\n')
   let current = null
 
-  const SECTION_HEADERS = [
-    'GIVEN', 'FIND', 'SOLUTION', 'ANSWER', 'KEY CONCEPT',
-    'CONCEPT', 'THEOREM', 'THEOREM/FORMULA', 'FORMULA',
-    'CONCEPT OVERVIEW', 'DETAILED EXPLANATION', 'VERIFICATION',
-    'COMMON MISTAKE', 'MNEMONIC', 'DIAGRAM NOTE'
-  ]
+  const HEADERS = ['GIVEN','FIND','SOLUTION','ANSWER','KEY CONCEPT',
+    'CONCEPT','THEOREM','THEOREM/FORMULA','FORMULA','CONCEPT OVERVIEW',
+    'DETAILED EXPLANATION','VERIFICATION','COMMON MISTAKE','MNEMONIC',
+    'DIAGRAM NOTE','ANALYSIS','WHY OTHERS ARE WRONG']
 
   for (const raw of lines) {
     const line = raw.trim()
-    if (!line) {
-      if (current) current.lines.push('')
-      continue
-    }
-
-    // Check if line is a section header
-    const header = SECTION_HEADERS.find(h =>
+    if (!line) { if (current) current.lines.push(''); continue }
+    const header = HEADERS.find(h =>
       line.toUpperCase().startsWith(h + ':') || line.toUpperCase() === h
     )
-
     if (header) {
       if (current) sections.push(current)
       const content = line.includes(':') ? line.slice(line.indexOf(':') + 1).trim() : ''
@@ -43,62 +45,54 @@ function parseAnswer(text) {
       current = { type: 'INTRO', lines: [line] }
     }
   }
-
   if (current) sections.push(current)
   return sections
 }
 
-// ── Format a single line of text ──────────────────────────────────────────────
 function formatLine(line) {
-  // Bold **text**
   line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-  // Step N: pattern
   line = line.replace(/^(Step \d+[:.]\s*)(.*)/, '<span class="step-num">$1</span>$2')
-  // Formula: line
-  line = line.replace(/^(Formula:|Equation:|Result:|Calculation:|Answer:)\s*(.*)/, 
+  line = line.replace(/^(Formula:|Equation:|Result:|Calculation:|Answer:)\s*(.*)/,
     '<span class="line-label">$1</span> <span class="line-val">$2</span>')
-  // Bullet points
   line = line.replace(/^[•·]\s(.+)/, '<span class="bullet">•</span> $1')
-  // ∴ therefore
   line = line.replace(/(∴\s*.+)/, '<span class="therefore">$1</span>')
   return line
 }
 
-// ── Render a section ──────────────────────────────────────────────────────────
 function Section({ type, lines }) {
-  const sectionMap = {
-    'GIVEN':             { icon: '📋', color: 'blue',   label: 'Given' },
-    'FIND':              { icon: '🎯', color: 'amber',  label: 'Find' },
-    'SOLUTION':          { icon: '🔢', color: 'teal',   label: 'Solution' },
-    'ANSWER':            { icon: '✅', color: 'green',  label: 'Answer' },
-    'KEY CONCEPT':       { icon: '💡', color: 'gold',   label: 'Key Concept' },
-    'CONCEPT':           { icon: '📖', color: 'blue',   label: 'Concept' },
-    'CONCEPT OVERVIEW':  { icon: '📖', color: 'blue',   label: 'Concept Overview' },
-    'THEOREM':           { icon: '📐', color: 'purple', label: 'Theorem' },
-    'THEOREM/FORMULA':   { icon: '📐', color: 'purple', label: 'Theorem / Formula' },
-    'FORMULA':           { icon: '📐', color: 'purple', label: 'Formula' },
-    'VERIFICATION':      { icon: '🔍', color: 'teal',   label: 'Verification' },
-    'COMMON MISTAKE':    { icon: '⚠️', color: 'red',    label: 'Common Mistake' },
-    'MNEMONIC':          { icon: '🧠', color: 'purple', label: 'Mnemonic' },
-    'DIAGRAM NOTE':      { icon: '📊', color: 'blue',   label: 'Diagram Note' },
-    'DETAILED EXPLANATION':{ icon: '📝', color: 'teal', label: 'Explanation' },
-    'INTRO':             { icon: null, color: 'none',   label: '' },
+  const map = {
+    'GIVEN':              { icon: '📋', color: 'blue',   label: 'Given' },
+    'FIND':               { icon: '🎯', color: 'amber',  label: 'Find' },
+    'SOLUTION':           { icon: '🔢', color: 'teal',   label: 'Solution' },
+    'ANSWER':             { icon: '✅', color: 'green',  label: 'Answer' },
+    'KEY CONCEPT':        { icon: '💡', color: 'gold',   label: 'Key Concept' },
+    'CONCEPT':            { icon: '📖', color: 'blue',   label: 'Concept' },
+    'CONCEPT OVERVIEW':   { icon: '📖', color: 'blue',   label: 'Concept Overview' },
+    'THEOREM':            { icon: '📐', color: 'purple', label: 'Theorem' },
+    'THEOREM/FORMULA':    { icon: '📐', color: 'purple', label: 'Theorem / Formula' },
+    'FORMULA':            { icon: '📐', color: 'purple', label: 'Formula' },
+    'VERIFICATION':       { icon: '🔍', color: 'teal',   label: 'Verification' },
+    'COMMON MISTAKE':     { icon: '⚠️', color: 'red',    label: 'Common Mistake' },
+    'MNEMONIC':           { icon: '🧠', color: 'purple', label: 'Mnemonic' },
+    'DIAGRAM NOTE':       { icon: '📊', color: 'blue',   label: 'Diagram Note' },
+    'DETAILED EXPLANATION':{ icon: '📝', color: 'teal',  label: 'Explanation' },
+    'ANALYSIS':           { icon: '🔬', color: 'blue',   label: 'Analysis' },
+    'WHY OTHERS ARE WRONG':{ icon: '❌', color: 'red',   label: 'Why Others Are Wrong' },
+    'INTRO':              { icon: null, color: 'none',   label: '' },
   }
-
-  const meta = sectionMap[type] || { icon: '•', color: 'none', label: type }
+  const meta = map[type] || { icon: '•', color: 'none', label: type }
   const content = lines.filter(l => l !== '').join('\n')
   if (!content && !lines.length) return null
-
   if (meta.color === 'none') {
     return (
       <div className="section-plain">
-        {lines.map((line, i) => line ? (
-          <div key={i} dangerouslySetInnerHTML={{ __html: formatLine(line) }} />
-        ) : <br key={i} />)}
+        {lines.map((line, i) => line
+          ? <div key={i} dangerouslySetInnerHTML={{ __html: formatLine(line) }} />
+          : <br key={i} />
+        )}
       </div>
     )
   }
-
   return (
     <div className={`answer-section section-${meta.color}`}>
       {meta.label && (
@@ -110,32 +104,26 @@ function Section({ type, lines }) {
       <div className="section-body">
         {lines.map((line, i) => {
           if (!line) return <br key={i} />
-          // Detect formula lines (contains = with math)
           const isFormula = /[=+\-×÷√²³°]/.test(line) &&
-                            /[A-Za-zα-ωΑ-Ω]/.test(line) &&
-                            line.length < 80 &&
-                            !line.startsWith('Step') &&
-                            !line.startsWith('•')
+            /[A-Za-zα-ωΑ-Ω]/.test(line) && line.length < 80 &&
+            !line.startsWith('Step') && !line.startsWith('•')
           if (isFormula && type === 'SOLUTION') {
             return <div key={i} className="formula-box">{line}</div>
           }
-          return (
-            <div key={i} className="section-line"
-              dangerouslySetInnerHTML={{ __html: formatLine(line) }} />
-          )
+          return <div key={i} className="section-line"
+            dangerouslySetInnerHTML={{ __html: formatLine(line) }} />
         })}
       </div>
     </div>
   )
 }
 
-// ── Mini visualisation tool ───────────────────────────────────────────────────
+// ── Step visualiser ───────────────────────────────────────────────────────────
 function StepViz({ sections }) {
   const steps = sections
     .filter(s => s.type === 'SOLUTION')
     .flatMap(s => {
-      const result = []
-      let current = null
+      const result = []; let current = null
       for (const line of s.lines) {
         if (line.match(/^Step \d+/)) {
           if (current) result.push(current)
@@ -147,9 +135,7 @@ function StepViz({ sections }) {
       if (current) result.push(current)
       return result
     })
-
   if (steps.length < 2) return null
-
   return (
     <div className="step-viz">
       <div className="viz-label">Solution Flow</div>
@@ -171,6 +157,39 @@ function StepViz({ sections }) {
   )
 }
 
+// ── Skeleton loading ──────────────────────────────────────────────────────────
+function SkeletonLoader() {
+  return (
+    <div className="msg msg-ai">
+      <div className="ai-header">
+        <span className="ai-badge">Thinking...</span>
+      </div>
+      <div className="bubble-ai skeleton-wrap">
+        <div className="skeleton-section">
+          <div className="skel skel-label" />
+          <div className="skel skel-line w80" />
+          <div className="skel skel-line w60" />
+        </div>
+        <div className="skeleton-section">
+          <div className="skel skel-label" />
+          <div className="skel skel-line w100" />
+          <div className="skel skel-line w90" />
+          <div className="skel skel-line w70" />
+          <div className="skel skel-formula" />
+          <div className="skel skel-line w85" />
+        </div>
+        <div className="skeleton-section">
+          <div className="skel skel-label" />
+          <div className="skel skel-line w50" />
+        </div>
+        <div className="skeleton-section skel-concept">
+          <div className="skel skel-line w95" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Bubbles ───────────────────────────────────────────────────────────────────
 function UserBubble({ text }) {
   return (
@@ -181,8 +200,12 @@ function UserBubble({ text }) {
 }
 
 function AIBubble({ text, sources, model, fromCache, similar, onSimilarClick }) {
-  const [copied, setCopied] = useState(false)
-  const [showRaw, setShowRaw] = useState(false)
+  const [copied, setCopied]       = useState(false)
+  const [bookmarked, setBookmarked] = useState(false)
+  const [showRaw, setShowRaw]     = useState(false)
+
+  const difficulty = getDifficulty(text, model)
+  const sections   = parseAnswer(text)
 
   const copyAnswer = () => {
     navigator.clipboard.writeText(text)
@@ -190,7 +213,17 @@ function AIBubble({ text, sources, model, fromCache, similar, onSimilarClick }) 
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const sections = parseAnswer(text)
+  const toggleBookmark = () => {
+    const saved = JSON.parse(localStorage.getItem('bookmarks') || '[]')
+    if (bookmarked) {
+      const updated = saved.filter(b => b.text !== text)
+      localStorage.setItem('bookmarks', JSON.stringify(updated))
+    } else {
+      saved.push({ text, sources, model, savedAt: new Date().toISOString() })
+      localStorage.setItem('bookmarks', JSON.stringify(saved))
+    }
+    setBookmarked(!bookmarked)
+  }
 
   return (
     <div className="msg msg-ai">
@@ -207,8 +240,20 @@ function AIBubble({ text, sources, model, fromCache, similar, onSimilarClick }) 
              model.includes('scout') ? 'Vision' : model}
           </span>
         )}
+        {/* Difficulty tag */}
+        <span className={`diff-badge diff-${difficulty.color}`}>
+          {difficulty.label}
+        </span>
         {fromCache && <span className="cache-badge">⚡ Instant</span>}
+
         <div className="header-actions">
+          <button
+            className={`icon-btn ${bookmarked ? 'bookmarked' : ''}`}
+            onClick={toggleBookmark}
+            title={bookmarked ? 'Remove bookmark' : 'Bookmark this answer'}
+          >
+            {bookmarked ? '🔖' : '🏷️'}
+          </button>
           <button className="icon-btn" onClick={() => setShowRaw(!showRaw)} title="Toggle view">
             {showRaw ? '📊' : '📝'}
           </button>
@@ -218,7 +263,7 @@ function AIBubble({ text, sources, model, fromCache, similar, onSimilarClick }) 
         </div>
       </div>
 
-      {/* Answer body */}
+      {/* Answer */}
       <div className="bubble-ai">
         {showRaw ? (
           <pre className="raw-text">{text}</pre>
@@ -257,22 +302,6 @@ function ErrorBubble({ text }) {
   )
 }
 
-function LoadingBubble() {
-  return (
-    <div className="msg msg-ai">
-      <div className="ai-header"><span className="ai-badge">Thinking...</span></div>
-      <div className="bubble-ai loading-bubble">
-        <div className="dots"><span /><span /><span /></div>
-        <div className="loading-steps">
-          <div className="ls ls1">📖 Searching NCERT + HC Verma...</div>
-          <div className="ls ls2">🧠 Understanding the question...</div>
-          <div className="ls ls3">✍️ Writing step-by-step solution...</div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function Welcome({ onExampleClick }) {
   return (
     <div className="welcome">
@@ -293,7 +322,7 @@ function Welcome({ onExampleClick }) {
   )
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function ChatArea({ messages, loading, subject, bottomRef, onExampleClick }) {
   return (
     <div className="chat-area">
@@ -316,7 +345,7 @@ export default function ChatArea({ messages, loading, subject, bottomRef, onExam
         if (m.type === 'error') return <ErrorBubble key={i} text={m.text} />
         return null
       })}
-      {loading && <LoadingBubble />}
+      {loading && <SkeletonLoader />}
       <div ref={bottomRef} />
     </div>
   )
