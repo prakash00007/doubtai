@@ -8,6 +8,7 @@ const EXAMPLES = [
   { q: "Explain DNA replication steps" },
 ]
 
+
 // ── Difficulty detector ───────────────────────────────────────────────────────
 function getDifficulty(text, model) {
   if (model && model.includes('8b')) return { label: 'Easy', color: 'green' }
