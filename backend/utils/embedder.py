@@ -1,6 +1,6 @@
 """
 FREE local embeddings — no API cost ever.
-Downloads ~90MB model on first run, then cached forever.
+Downloads ~90MB model on first run, then cached forever..
 """
 from sentence_transformers import SentenceTransformer
 
