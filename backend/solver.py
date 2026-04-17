@@ -1,4 +1,4 @@
-"""
+"""#
 DoubtAI — AI Solver v7 (Final)
 - Smart format: numerical / theoretical / mcq
 - STRICT subject filtering in RAG
