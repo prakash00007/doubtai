@@ -3,8 +3,11 @@ DoubtAI — FastAPI Server v6
 New: Smart Analytics + Weak Topic Detector
 """
 import hashlib, time, os, base64
+from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 from dotenv import load_dotenv
@@ -16,6 +19,16 @@ load_dotenv()
 
 app = FastAPI(title="DoubtAI API", version="6.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# If a built frontend exists, serve the React app from FastAPI.
+# - Docker deploy copies `frontend/dist` -> `backend/static`
+# - Local dev can also run `npm run build` in `frontend/` (creates `frontend/dist`)
+_BACKEND_DIR = Path(__file__).resolve().parent
+_REPO_DIR = _BACKEND_DIR.parent
+_STATIC_DIR = (_BACKEND_DIR / "static") if (_BACKEND_DIR / "static").exists() else (_REPO_DIR / "frontend" / "dist")
+_ASSETS_DIR = _STATIC_DIR / "assets"
+if _ASSETS_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=str(_ASSETS_DIR)), name="assets")
 
 # ── Cache ─────────────────────────────────────────────────────────────────────
 _cache = {}
@@ -82,8 +95,8 @@ class AskResponse(BaseModel):
 
 
 # ── Core routes ───────────────────────────────────────────────────────────────
-@app.get("/")
-def root():
+@app.get("/api/health")
+def health():
     return {"status": "DoubtAI v6.0 🚀", "docs": "/docs"}
 
 @app.get("/stats")
@@ -221,6 +234,19 @@ def clear_cache():
     count = len(_cache)
     _cache.clear()
     return {"message": "Cache cleared", "removed": count}
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def frontend(full_path: str):
+    """Single-service deploy: serve the built React app, with SPA fallback."""
+    if not _STATIC_DIR.exists():
+        raise HTTPException(404, "Frontend not built. Run `npm run build` in frontend/ or deploy with Docker.")
+    candidate = (_STATIC_DIR / full_path).resolve()
+    # Prevent path traversal outside the static directory.
+    if _STATIC_DIR not in candidate.parents and candidate != _STATIC_DIR:
+        raise HTTPException(404)
+    if candidate.is_file():
+        return FileResponse(str(candidate))
+    return FileResponse(str(_STATIC_DIR / "index.html"))
 
 
 # ── Start ─────────────────────────────────────────────────────────────────────

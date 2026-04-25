@@ -162,6 +162,23 @@ npm run dev
 
 ---
 
+## 🌍 Deploy (Public Link)
+
+Easiest: deploy as **one service** (frontend + API) using Docker.
+
+### Option A: Render (fastest, public URL)
+1. Push your latest changes to GitHub.
+2. On Render: New → Blueprint → select this repo (uses `render.yaml`).
+3. Add env vars: `GROQ_API_KEY`, `PINECONE_API_KEY` (and optionally `FREE_DAILY_LIMIT`).
+4. Deploy → you get a public `onrender.com` URL anyone can open.
+
+### Option B: Railway (also easy)
+1. New Project → Deploy from GitHub → select repo (Railway will use `Dockerfile`).
+2. Add env vars: `GROQ_API_KEY`, `PINECONE_API_KEY`, optional `FREE_DAILY_LIMIT`.
+3. Deploy → you get a public URL.
+
+---
+
 ## 📁 Project Structure
 
 ```

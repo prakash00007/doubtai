@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: doubtai
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: FREE_DAILY_LIMIT
+        value: "10"
+

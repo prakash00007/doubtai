@@ -5,7 +5,9 @@ import ChatArea from './components/ChatArea'
 import InputBar from './components/InputBar'
 import './App.css'
 
-const BACKEND = 'http://localhost:8000'
+// Use same-origin by default (works with Vite proxy in dev + single-service deploy in prod).
+// Optionally override with `VITE_BACKEND_URL` if you host API separately.
+const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
 export default function App() {
   const [messages, setMessages]     = useState([])
@@ -54,7 +56,7 @@ export default function App() {
       if (res.data.remaining !== null) setRemaining(res.data.remaining)
 
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Could not connect to server. Make sure backend is running on port 8000.'
+      const msg = err.response?.data?.detail || 'Could not connect to server. Make sure the backend is running.'
       setMessages(prev => [...prev, { type: 'error', text: msg }])
     }
 
